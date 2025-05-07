@@ -6,7 +6,7 @@ require (
 	github.com/casbin/casbin/v2 v2.100.0
 	github.com/glebarez/sqlite v1.7.0
 	gorm.io/driver/mysql v1.5.7
-	gorm.io/driver/postgres v1.5.9
+	gorm.io/driver/postgres v1.5.11
 	gorm.io/driver/sqlserver v1.5.3
 	gorm.io/gorm v1.25.12
 	gorm.io/plugin/dbresolver v1.5.3
