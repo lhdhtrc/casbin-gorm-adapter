@@ -44,7 +44,6 @@ type CasbinRule struct {
 	V8    string `gorm:"size:100"`
 	V9    string `gorm:"size:100"`
 	V10   string `gorm:"size:100"`
-	V11   string `gorm:"size:100"`
 }
 
 func (CasbinRule) TableName() string {
