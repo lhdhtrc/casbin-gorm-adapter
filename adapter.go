@@ -43,7 +43,6 @@ type CasbinRule struct {
 	V7    string `gorm:"size:100"`
 	V8    string `gorm:"size:100"`
 	V9    string `gorm:"size:100"`
-	V10   string `gorm:"size:100"`
 }
 
 func (CasbinRule) TableName() string {
@@ -62,7 +61,6 @@ type Filter struct {
 	V7    []string
 	V8    []string
 	V9    []string
-	V10   []string
 }
 
 type BatchFilter struct {
@@ -424,7 +422,7 @@ func (a *Adapter) createTable() error {
 	index := strings.ReplaceAll("idx_"+tableName, ".", "_")
 	hasIndex := a.db.Migrator().HasIndex(t, index)
 	if !hasIndex {
-		if err := a.db.Exec(fmt.Sprintf("CREATE UNIQUE INDEX %s ON %s (ptype,v0,v1,v2,v3,v4,v5,v6,v7,v8,v9,v10)", index, tableName)).Error; err != nil {
+		if err := a.db.Exec(fmt.Sprintf("CREATE UNIQUE INDEX %s ON %s (ptype,v0,v1,v2,v3,v4,v5,v6,v7,v8,v9)", index, tableName)).Error; err != nil {
 			return err
 		}
 	}
@@ -472,7 +470,6 @@ func loadPolicyLine(line CasbinRule, model model.Model) error {
 		line.V7,
 		line.V8,
 		line.V9,
-		line.V10,
 	}
 
 	index := len(p) - 1
@@ -593,9 +590,6 @@ func (a *Adapter) filterQuery(db *gorm.DB, filter Filter) func(db *gorm.DB) *gor
 		if len(filter.V9) > 0 {
 			db = db.Where("v9 in (?)", filter.V9)
 		}
-		if len(filter.V10) > 0 {
-			db = db.Where("v10 in (?)", filter.V10)
-		}
 		return db
 	}
 }
@@ -633,9 +627,6 @@ func (a *Adapter) savePolicyLine(ptype string, rule []string) CasbinRule {
 	}
 	if len(rule) > 9 {
 		line.V9 = rule[9]
-	}
-	if len(rule) > 10 {
-		line.V10 = rule[10]
 	}
 
 	return *line
@@ -834,9 +825,6 @@ func (a *Adapter) RemoveFilteredPolicyCtx(ctx context.Context, sec string, ptype
 	if fieldIndex <= 9 && 9 < fieldIndex+len(fieldValues) {
 		line.V9 = fieldValues[9-fieldIndex]
 	}
-	if fieldIndex <= 10 && 10 < fieldIndex+len(fieldValues) {
-		line.V10 = fieldValues[10-fieldIndex]
-	}
 	err = a.rawDelete(ctx, a.db, *line)
 	return err
 }
@@ -895,10 +883,6 @@ func (a *Adapter) rawDelete(ctx context.Context, db *gorm.DB, line CasbinRule) e
 		queryStr += " and v9 = ?"
 		queryArgs = append(queryArgs, line.V9)
 	}
-	if line.V10 != "" {
-		queryStr += " and v10 = ?"
-		queryArgs = append(queryArgs, line.V10)
-	}
 	args := append([]interface{}{queryStr}, queryArgs...)
 	err := db.WithContext(ctx).Delete(a.getTableInstance(), args...).Error
 	return err
@@ -947,10 +931,6 @@ func appendWhere(line CasbinRule) (string, []interface{}) {
 	if line.V9 != "" {
 		queryStr += " and v9 = ?"
 		queryArgs = append(queryArgs, line.V9)
-	}
-	if line.V10 != "" {
-		queryStr += " and v10 = ?"
-		queryArgs = append(queryArgs, line.V10)
 	}
 	return queryStr, queryArgs
 }
@@ -1016,9 +996,6 @@ func (a *Adapter) UpdateFilteredPolicies(sec string, ptype string, newPolicies [
 	if fieldIndex <= 9 && 9 < fieldIndex+len(fieldValues) {
 		line.V9 = fieldValues[9-fieldIndex]
 	}
-	if fieldIndex <= 10 && 10 < fieldIndex+len(fieldValues) {
-		line.V10 = fieldValues[10-fieldIndex]
-	}
 
 	newP := make([]CasbinRule, 0, len(newPolicies))
 	oldP := make([]CasbinRule, 0)
@@ -1083,7 +1060,6 @@ func (a *Adapter) Preview(rules *[]CasbinRule, model model.Model) error {
 			rule.V7,
 			rule.V8,
 			rule.V9,
-			rule.V10,
 		}
 		index := len(r) - 1
 		for r[index] == "" {
@@ -1154,10 +1130,6 @@ func (c *CasbinRule) queryString() (interface{}, []interface{}) {
 		queryStr += " and v9 = ?"
 		queryArgs = append(queryArgs, c.V9)
 	}
-	if c.V10 != "" {
-		queryStr += " and v10 = ?"
-		queryArgs = append(queryArgs, c.V10)
-	}
 
 	return queryStr, queryArgs
 }
@@ -1197,9 +1169,7 @@ func (c *CasbinRule) toStringPolicy() []string {
 	if c.V9 != "" {
 		policy = append(policy, c.V9)
 	}
-	if c.V10 != "" {
-		policy = append(policy, c.V10)
-	}
+
 	return policy
 }
 
